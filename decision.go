@@ -4,38 +4,34 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/checker/decls"
 	"github.com/pkg/errors"
+	"sort"
 	"sync"
 )
 
-type EvalType int
+type DecisionType int
 
 const (
-	AllTrue EvalType = 0
-	AnyTrue EvalType = 1
+	AllTrue DecisionType = 0
+	AnyTrue DecisionType = 1
 )
 
 var (
-	ErrEvalDenied    = errors.New("eval: evaluation = false")
-	ErrNoExpressions = errors.New("eval: no expressions")
+	ErrDecisionDenied = errors.New("eval: evaluation = false")
+	ErrNoExpressions  = errors.New("eval: no expressions")
 )
 
-type Mapper interface {
-	AsMap() map[string]interface{}
-}
-
-type MapperFunc func() map[string]interface{}
-
-func (m MapperFunc) AsMap() map[string]interface{} {
-	return m()
-}
-
-type Eval struct {
+// Decision is used to evaluate boolean expressions
+type Decision struct {
 	e        *cel.Env
 	programs map[string]cel.Program
 	mu       sync.RWMutex
 }
 
-func New(expressions []string) (*Eval, error) {
+// NewDecision creates a new Decision with the given boolean CEL expressions
+func NewDecision(expressions []string) (*Decision, error) {
+	if len(expressions) == 0 {
+		return nil, ErrNoExpressions
+	}
 	e, err := cel.NewEnv(
 		cel.Declarations(
 			decls.NewVar("this", decls.NewMapType(decls.String, decls.Any)),
@@ -59,14 +55,15 @@ func New(expressions []string) (*Eval, error) {
 		}
 		programs[expression] = program
 	}
-	return &Eval{
+	return &Decision{
 		e:        e,
 		programs: programs,
 		mu:       sync.RWMutex{},
 	}, nil
 }
 
-func (n *Eval) AddExpression(expression string) error {
+// AddExpression adds an expression to the decision tree
+func (n *Decision) AddExpression(expression string) error {
 	if expression == "" {
 		return errors.New("eval: empty expression")
 	}
@@ -84,7 +81,8 @@ func (n *Eval) AddExpression(expression string) error {
 	return nil
 }
 
-func (n *Eval) Eval(mapper Mapper, typ EvalType) error {
+// Eval evaluates the boolean CEL expressions against the Mapper
+func (n *Decision) Eval(mapper Mapper, typ DecisionType) error {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	if len(n.programs) == 0 {
@@ -99,7 +97,7 @@ func (n *Eval) Eval(mapper Mapper, typ EvalType) error {
 				return errors.Wrapf(err, "eval: failed to evaluate expression (%s)", exp)
 			}
 			if val, ok := out.Value().(bool); !ok || !val {
-				return ErrEvalDenied
+				return ErrDecisionDenied
 			}
 		}
 	} else if typ == AnyTrue {
@@ -114,15 +112,17 @@ func (n *Eval) Eval(mapper Mapper, typ EvalType) error {
 				return nil
 			}
 		}
-		return ErrEvalDenied
+		return ErrDecisionDenied
 	}
 	return nil
 }
 
-func (e *Eval) Expressions() []string {
+// Expressions returns the decsions raw expressions
+func (e *Decision) Expressions() []string {
 	var exp []string
 	for ex, _ := range e.programs {
 		exp = append(exp, ex)
 	}
+	sort.Strings(exp)
 	return exp
 }
