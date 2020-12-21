@@ -84,13 +84,12 @@ func (n *Decision) AddExpression(expression string) error {
 }
 
 // Eval evaluates the boolean CEL expressions against the Mapper
-func (n *Decision) Eval(mapper MapperFunc) error {
+func (n *Decision) Eval(data map[string]interface{}) error {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	if len(n.programs) == 0 {
 		return ErrNoExpressions
 	}
-	data := mapper()
 	if n.dtype == AllTrue {
 		for exp, program := range n.programs {
 			out, _, err := program.Eval(map[string]interface{}{

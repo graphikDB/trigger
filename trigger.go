@@ -54,15 +54,13 @@ func NewTrigger(decision *Decision, triggerExpressions []string) (*Trigger, erro
 }
 
 // Trigger executes it's decision against the Mapper and then overwrites the
-func (t *Trigger) Trigger(mapper MapperFunc, triggerFunc TriggerFunc) error {
+func (t *Trigger) Trigger(data map[string]interface{}) error {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	if len(t.programs) == 0 {
 		return ErrNoExpressions
 	}
-	data := mapper()
-	patch := map[string]interface{}{}
-	if err := t.decision.Eval(mapper); err == nil {
+	if err := t.decision.Eval(data); err == nil {
 		for exp, program := range t.programs {
 			out, _, err := program.Eval(map[string]interface{}{
 				"this": data,
@@ -73,12 +71,12 @@ func (t *Trigger) Trigger(mapper MapperFunc, triggerFunc TriggerFunc) error {
 			patchFields, ok := out.Value().(map[ref.Val]ref.Val)
 			if ok {
 				for k, v := range patchFields {
-					patch[k.Value().(string)] = v.Value()
+					data[k.Value().(string)] = v.Value()
 				}
 			}
 		}
 	}
-	return triggerFunc(patch)
+	return nil
 }
 
 // AddExpression adds an expression to the decision tree
