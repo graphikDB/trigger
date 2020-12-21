@@ -8,7 +8,7 @@ import (
 )
 
 func Test(t *testing.T) {
-	decision, err := eval.NewDecision([]string{"this.name == 'bob'"})
+	decision, err := eval.NewDecision(eval.AllTrue, []string{"this.name == 'bob'"})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -21,7 +21,7 @@ func Test(t *testing.T) {
 			"name":  "bob",
 			"email": "bob@acme.com",
 		}
-	}, eval.AllTrue); err != nil {
+	}); err != nil {
 		t.Fatal(err.Error())
 	}
 	if err := decision.Eval(eval.MapperFunc(func() map[string]interface{} {
@@ -29,7 +29,7 @@ func Test(t *testing.T) {
 			"name":  "bob3",
 			"email": "bob@acme.com",
 		}
-	}), eval.AllTrue); err == nil {
+	})); err == nil {
 		t.Fatal("expected an error since bob3 != bob")
 	}
 	if len(decision.Expressions()) != 2 {
@@ -45,7 +45,7 @@ func Test(t *testing.T) {
 	}
 	if err := trigg.Trigger(func() map[string]interface{} {
 		return person
-	}, eval.AllTrue, func(input map[string]interface{}) error {
+	}, func(input map[string]interface{}) error {
 		for k, v := range input {
 			person[k] = v
 		}
@@ -60,7 +60,7 @@ func Test(t *testing.T) {
 }
 
 func ExampleNewDecision() {
-	decision, err := eval.NewDecision([]string{"this.email.endsWith('acme.com')"})
+	decision, err := eval.NewDecision(eval.AllTrue, []string{"this.email.endsWith('acme.com')"})
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -69,12 +69,12 @@ func ExampleNewDecision() {
 		fmt.Println(err.Error())
 		return
 	}
-	if err := decision.Eval(eval.MapperFunc(func() map[string]interface{} {
+	if err := decision.Eval(func() map[string]interface{} {
 		return map[string]interface{}{
 			"name":  "bob",
 			"email": "bob@acme.com",
 		}
-	}), eval.AllTrue); err != nil {
+	}); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
@@ -83,7 +83,7 @@ func ExampleNewDecision() {
 }
 
 func ExampleNewTrigger() {
-	decision, err := eval.NewDecision([]string{"this.email.endsWith('acme.com')"})
+	decision, err := eval.NewDecision(eval.AllTrue, []string{"this.email.endsWith('acme.com')"})
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -99,7 +99,7 @@ func ExampleNewTrigger() {
 	}
 	if err := trigg.Trigger(func() map[string]interface{} {
 		return person
-	}, eval.AllTrue, func(input map[string]interface{}) error {
+	}, func(input map[string]interface{}) error {
 		for k, v := range input {
 			person[k] = v
 		}

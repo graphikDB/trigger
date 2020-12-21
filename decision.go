@@ -25,10 +25,11 @@ type Decision struct {
 	e        *cel.Env
 	programs map[string]cel.Program
 	mu       sync.RWMutex
+	dtype    DecisionType
 }
 
 // NewDecision creates a new Decision with the given boolean CEL expressions
-func NewDecision(expressions []string) (*Decision, error) {
+func NewDecision(dtype DecisionType, expressions []string) (*Decision, error) {
 	if len(expressions) == 0 {
 		return nil, ErrNoExpressions
 	}
@@ -59,6 +60,7 @@ func NewDecision(expressions []string) (*Decision, error) {
 		e:        e,
 		programs: programs,
 		mu:       sync.RWMutex{},
+		dtype:    dtype,
 	}, nil
 }
 
@@ -82,14 +84,14 @@ func (n *Decision) AddExpression(expression string) error {
 }
 
 // Eval evaluates the boolean CEL expressions against the Mapper
-func (n *Decision) Eval(mapper MapperFunc, typ DecisionType) error {
+func (n *Decision) Eval(mapper MapperFunc) error {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	if len(n.programs) == 0 {
 		return ErrNoExpressions
 	}
 	data := mapper()
-	if typ == AllTrue {
+	if n.dtype == AllTrue {
 		for exp, program := range n.programs {
 			out, _, err := program.Eval(map[string]interface{}{
 				"this": data,
@@ -101,7 +103,7 @@ func (n *Decision) Eval(mapper MapperFunc, typ DecisionType) error {
 				return ErrDecisionDenied
 			}
 		}
-	} else if typ == AnyTrue {
+	} else if n.dtype == AnyTrue {
 		for exp, program := range n.programs {
 			out, _, err := program.Eval(map[string]interface{}{
 				"this": data,

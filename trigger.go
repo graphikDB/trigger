@@ -53,8 +53,8 @@ func NewTrigger(decision *Decision, triggerExpressions []string) (*Trigger, erro
 	}, nil
 }
 
-// Trigger executes it's decision against the Mapper and returns values returned by the trigger expressions
-func (t *Trigger) Trigger(mapper MapperFunc, decisionType DecisionType, triggerFunc TriggerFunc) error {
+// Trigger executes it's decision against the Mapper and then overwrites the
+func (t *Trigger) Trigger(mapper MapperFunc, triggerFunc TriggerFunc) error {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	if len(t.programs) == 0 {
@@ -62,7 +62,7 @@ func (t *Trigger) Trigger(mapper MapperFunc, decisionType DecisionType, triggerF
 	}
 	data := mapper()
 	patch := map[string]interface{}{}
-	if err := t.decision.Eval(mapper, decisionType); err == nil {
+	if err := t.decision.Eval(mapper); err == nil {
 		for exp, program := range t.programs {
 			out, _, err := program.Eval(map[string]interface{}{
 				"this": data,
