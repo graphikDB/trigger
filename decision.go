@@ -82,16 +82,17 @@ func (n *Decision) AddExpression(expression string) error {
 }
 
 // Eval evaluates the boolean CEL expressions against the Mapper
-func (n *Decision) Eval(mapper Mapper, typ DecisionType) error {
+func (n *Decision) Eval(mapper MapperFunc, typ DecisionType) error {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	if len(n.programs) == 0 {
 		return ErrNoExpressions
 	}
+	data := mapper()
 	if typ == AllTrue {
 		for exp, program := range n.programs {
 			out, _, err := program.Eval(map[string]interface{}{
-				"this": mapper.AsMap(),
+				"this": data,
 			})
 			if err != nil {
 				return errors.Wrapf(err, "eval: failed to evaluate expression (%s)", exp)
@@ -103,7 +104,7 @@ func (n *Decision) Eval(mapper Mapper, typ DecisionType) error {
 	} else if typ == AnyTrue {
 		for exp, program := range n.programs {
 			out, _, err := program.Eval(map[string]interface{}{
-				"this": mapper.AsMap(),
+				"this": data,
 			})
 			if err != nil {
 				return errors.Wrapf(err, "eval: failed to evaluate expression (%s)", exp)

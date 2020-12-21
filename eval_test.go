@@ -16,12 +16,12 @@ func Test(t *testing.T) {
 		fmt.Println(err.Error())
 		return
 	}
-	if err := decision.Eval(eval.MapperFunc(func() map[string]interface{} {
+	if err := decision.Eval(func() map[string]interface{} {
 		return map[string]interface{}{
 			"name":  "bob",
 			"email": "bob@acme.com",
 		}
-	}), eval.AllTrue); err != nil {
+	}, eval.AllTrue); err != nil {
 		t.Fatal(err.Error())
 	}
 	if err := decision.Eval(eval.MapperFunc(func() map[string]interface{} {
@@ -35,7 +35,28 @@ func Test(t *testing.T) {
 	if len(decision.Expressions()) != 2 {
 		t.Fatal("expected 2 expressions")
 	}
-
+	trigg, err := eval.NewTrigger(decision, []string{"{'name': 'coleman'}"})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	person := map[string]interface{}{
+		"name":  "bob",
+		"email": "bob@acme.com",
+	}
+	if err := trigg.Trigger(func() map[string]interface{} {
+		return person
+	}, eval.AllTrue, func(input map[string]interface{}) error {
+		for k, v := range input {
+			person[k] = v
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err.Error())
+	}
+	if person["name"] != "coleman" {
+		t.Fatal("failed to trigger")
+	}
+	fmt.Println("trigger expressions: ", strings.Join(trigg.Expressions(), ","))
 }
 
 func ExampleNewDecision() {
@@ -59,4 +80,34 @@ func ExampleNewDecision() {
 	}
 	fmt.Println(strings.Join(decision.Expressions(), ","))
 	// Output: this.email.endsWith('acme.com'),this.name != ''
+}
+
+func ExampleNewTrigger() {
+	decision, err := eval.NewDecision([]string{"this.email.endsWith('acme.com')"})
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	trigg, err := eval.NewTrigger(decision, []string{"{'admin': true}"})
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	person := map[string]interface{}{
+		"name":  "bob",
+		"email": "bob@acme.com",
+	}
+	if err := trigg.Trigger(func() map[string]interface{} {
+		return person
+	}, eval.AllTrue, func(input map[string]interface{}) error {
+		for k, v := range input {
+			person[k] = v
+		}
+		return nil
+	}); err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println(person["admin"])
+	// Output: true
 }
