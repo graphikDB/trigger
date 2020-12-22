@@ -3,18 +3,13 @@ package eval_test
 import (
 	"fmt"
 	"github.com/graphikDB/eval"
-	"strings"
 	"testing"
 )
 
 func Test(t *testing.T) {
-	decision, err := eval.NewDecision(eval.AllTrue, []string{"this.name == 'bob'"})
+	decision, err := eval.NewDecision(eval.AllTrue, "this.name == 'bob'")
 	if err != nil {
 		t.Fatal(err.Error())
-	}
-	if err := decision.AddExpression("this.email != ''"); err != nil {
-		fmt.Println(err.Error())
-		return
 	}
 	if err := decision.Eval(map[string]interface{}{
 		"name":  "bob",
@@ -28,10 +23,7 @@ func Test(t *testing.T) {
 	}); err == nil {
 		t.Fatal("expected an error since bob3 != bob")
 	}
-	if len(decision.Expressions()) != 2 {
-		t.Fatal("expected 2 expressions")
-	}
-	trigg, err := eval.NewTrigger(decision, []string{"{'name': 'coleman'}"})
+	trigg, err := eval.NewTrigger(decision, "{'name': 'coleman'}")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -39,22 +31,19 @@ func Test(t *testing.T) {
 		"name":  "bob",
 		"email": "bob@acme.com",
 	}
-	if err := trigg.Trigger(person); err != nil {
+	data, err := trigg.Trigger(person)
+	if err != nil {
 		t.Fatal(err.Error())
 	}
-	if person["name"] != "coleman" {
+	if data["name"] != "coleman" {
 		t.Fatal("failed to trigger")
 	}
-	fmt.Println("trigger expressions: ", strings.Join(trigg.Expressions(), ","))
+	fmt.Println("trigger expressions: ", trigg.Expression())
 }
 
 func ExampleNewDecision() {
-	decision, err := eval.NewDecision(eval.AllTrue, []string{"this.email.endsWith('acme.com')"})
+	decision, err := eval.NewDecision(eval.AllTrue, "this.email.endsWith('acme.com')")
 	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	if err := decision.AddExpression("this.name != ''"); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
@@ -65,20 +54,22 @@ func ExampleNewDecision() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(strings.Join(decision.Expressions(), ","))
-	// Output: this.email.endsWith('acme.com'),this.name != ''
+	fmt.Println(decision.Expression())
+	// Output: this.email.endsWith('acme.com')
 }
 
 func ExampleNewTrigger() {
-	decision, err := eval.NewDecision(eval.AllTrue, []string{"this.email.endsWith('acme.com')"})
+	decision, err := eval.NewDecision(eval.AllTrue, "this.email.endsWith('acme.com')")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	trigg, err := eval.NewTrigger(decision, []string{
-		"{'admin': true}",
-		"{'updated_at': now}",
-	})
+	trigg, err := eval.NewTrigger(decision, `
+	{
+		'admin': true,
+		'updated_at': now()
+	}
+`)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -87,10 +78,11 @@ func ExampleNewTrigger() {
 		"name":  "bob",
 		"email": "bob@acme.com",
 	}
-	if err := trigg.Trigger(person); err != nil {
+	data, err := trigg.Trigger(person)
+	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(person["admin"], person["updated_at"] != 0)
+	fmt.Println(data["admin"], data["updated_at"].(int64) > 0)
 	// Output: true true
 }
