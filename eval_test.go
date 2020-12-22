@@ -7,7 +7,7 @@ import (
 )
 
 func Test(t *testing.T) {
-	decision, err := eval.NewDecision(eval.AllTrue, "this.name == 'bob'")
+	decision, err := eval.NewDecision("this.name == 'bob'")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -42,7 +42,7 @@ func Test(t *testing.T) {
 }
 
 func ExampleNewDecision() {
-	decision, err := eval.NewDecision(eval.AllTrue, "this.email.endsWith('acme.com')")
+	decision, err := eval.NewDecision("this.email.endsWith('acme.com')")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -59,7 +59,7 @@ func ExampleNewDecision() {
 }
 
 func ExampleNewTrigger() {
-	decision, err := eval.NewDecision(eval.AllTrue, "this.email.endsWith('acme.com')")
+	decision, err := eval.NewDecision("this.email.endsWith('acme.com')")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -85,5 +85,5 @@ func ExampleNewTrigger() {
 		return
 	}
 	fmt.Println(data["admin"], data["updated_at"].(int64) > 0, data["email_hash"])
-	// Output: true true
+	// Output: true true 6fd706dd2d151c2bf79218a2acd764a7d3eed7e3
 }

@@ -8,13 +8,6 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
-type DecisionType int
-
-const (
-	AllTrue DecisionType = 0
-	AnyTrue DecisionType = 1
-)
-
 var (
 	ErrDecisionDenied   = errors.New("eval: evaluation = false")
 	ErrEmptyExpressions = errors.New("eval: empty expressions")
@@ -24,12 +17,11 @@ var (
 type Decision struct {
 	e          *cel.Env
 	program    cel.Program
-	dtype      DecisionType
 	expression string
 }
 
 // NewDecision creates a new Decision with the given boolean CEL expressions
-func NewDecision(dtype DecisionType, expression string) (*Decision, error) {
+func NewDecision(expression string) (*Decision, error) {
 	if expression == "" {
 		return nil, ErrEmptyExpressions
 	}
@@ -43,9 +35,37 @@ func NewDecision(dtype DecisionType, expression string) (*Decision, error) {
 					decls.Int,
 				),
 			),
+			decls.NewFunction("uuid",
+				decls.NewOverload(
+					"uuid",
+					[]*expr.Type{},
+					decls.String,
+				),
+			),
 			decls.NewFunction("sha1",
 				decls.NewOverload(
 					"sha1",
+					[]*expr.Type{decls.String},
+					decls.String,
+				),
+			),
+			decls.NewFunction("sha256",
+				decls.NewOverload(
+					"sha256",
+					[]*expr.Type{decls.String},
+					decls.String,
+				),
+			),
+			decls.NewFunction("base64Decode",
+				decls.NewOverload(
+					"base64Decode",
+					[]*expr.Type{decls.String},
+					decls.String,
+				),
+			),
+			decls.NewFunction("base64Encode",
+				decls.NewOverload(
+					"base64Encode",
 					[]*expr.Type{decls.String},
 					decls.String,
 				),
@@ -69,6 +89,22 @@ func NewDecision(dtype DecisionType, expression string) (*Decision, error) {
 				Function: defaultFuncMap["now"],
 			},
 			&functions.Overload{
+				Operator: "sha256",
+				Function: defaultFuncMap["sha256"],
+			},
+			&functions.Overload{
+				Operator: "base64Encode",
+				Function: defaultFuncMap["base64Encode"],
+			},
+			&functions.Overload{
+				Operator: "base64Decode",
+				Function: defaultFuncMap["base64Decode"],
+			},
+			&functions.Overload{
+				Operator: "uuid",
+				Function: defaultFuncMap["uuid"],
+			},
+			&functions.Overload{
 				Operator: "sha1",
 				Function: defaultFuncMap["sha1"],
 			}),
@@ -79,7 +115,6 @@ func NewDecision(dtype DecisionType, expression string) (*Decision, error) {
 	return &Decision{
 		e:          e,
 		program:    program,
-		dtype:      dtype,
 		expression: expression,
 	}, nil
 }
