@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"sort"
 	"sync"
+	"time"
 )
 
 type DecisionType int
@@ -36,6 +37,7 @@ func NewDecision(dtype DecisionType, expressions []string) (*Decision, error) {
 	e, err := cel.NewEnv(
 		cel.Declarations(
 			decls.NewVar("this", decls.NewMapType(decls.String, decls.Any)),
+			decls.NewVar("now", decls.Int),
 		),
 	)
 	if err != nil {
@@ -94,6 +96,7 @@ func (n *Decision) Eval(data map[string]interface{}) error {
 		for exp, program := range n.programs {
 			out, _, err := program.Eval(map[string]interface{}{
 				"this": data,
+				"now":  time.Now().Unix(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "eval: failed to evaluate expression (%s)", exp)
@@ -106,6 +109,7 @@ func (n *Decision) Eval(data map[string]interface{}) error {
 		for exp, program := range n.programs {
 			out, _, err := program.Eval(map[string]interface{}{
 				"this": data,
+				"now":  time.Now().Unix(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "eval: failed to evaluate expression (%s)", exp)

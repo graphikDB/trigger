@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"sort"
 	"sync"
+	"time"
 )
 
 // Trigger creates values as map[string]interface{} if it's decisider returns no errors against a Mapper
@@ -25,6 +26,7 @@ func NewTrigger(decision *Decision, triggerExpressions []string) (*Trigger, erro
 	e, err := cel.NewEnv(
 		cel.Declarations(
 			decls.NewVar("this", decls.NewMapType(decls.String, decls.Any)),
+			decls.NewVar("now", decls.Int),
 		),
 	)
 	if err != nil {
@@ -64,14 +66,24 @@ func (t *Trigger) Trigger(data map[string]interface{}) error {
 		for exp, program := range t.programs {
 			out, _, err := program.Eval(map[string]interface{}{
 				"this": data,
+				"now":  time.Now().Unix(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "eval: failed to evaluate trigger (%s)", exp)
 			}
-			patchFields, ok := out.Value().(map[ref.Val]ref.Val)
-			if ok {
+			if patchFields, ok := out.Value().(map[ref.Val]ref.Val); ok {
 				for k, v := range patchFields {
 					data[k.Value().(string)] = v.Value()
+				}
+			}
+			if patchFields, ok := out.Value().(map[string]interface{}); ok {
+				for k, v := range patchFields {
+					data[k] = v
+				}
+			}
+			if patchFields, ok := out.Value().(map[string]string); ok {
+				for k, v := range patchFields {
+					data[k] = v
 				}
 			}
 		}

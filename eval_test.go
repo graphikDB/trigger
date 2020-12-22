@@ -17,15 +17,15 @@ func Test(t *testing.T) {
 		return
 	}
 	if err := decision.Eval(map[string]interface{}{
-			"name":  "bob",
-			"email": "bob@acme.com",
-		}); err != nil {
+		"name":  "bob",
+		"email": "bob@acme.com",
+	}); err != nil {
 		t.Fatal(err.Error())
 	}
 	if err := decision.Eval(map[string]interface{}{
-			"name":  "bob3",
-			"email": "bob@acme.com",
-		}); err == nil {
+		"name":  "bob3",
+		"email": "bob@acme.com",
+	}); err == nil {
 		t.Fatal("expected an error since bob3 != bob")
 	}
 	if len(decision.Expressions()) != 2 {
@@ -59,9 +59,9 @@ func ExampleNewDecision() {
 		return
 	}
 	if err := decision.Eval(map[string]interface{}{
-			"name":  "bob",
-			"email": "bob@acme.com",
-		}); err != nil {
+		"name":  "bob",
+		"email": "bob@acme.com",
+	}); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
@@ -75,7 +75,10 @@ func ExampleNewTrigger() {
 		fmt.Println(err.Error())
 		return
 	}
-	trigg, err := eval.NewTrigger(decision, []string{"{'admin': true}"})
+	trigg, err := eval.NewTrigger(decision, []string{
+		"{'admin': true}",
+		"{'updated_at': now}",
+	})
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -88,6 +91,6 @@ func ExampleNewTrigger() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(person["admin"])
-	// Output: true
+	fmt.Println(person["admin"], person["updated_at"] != 0)
+	// Output: true true
 }
