@@ -5,6 +5,7 @@ import (
 	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/interpreter/functions"
 	"github.com/pkg/errors"
+	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
 type DecisionType int
@@ -35,6 +36,20 @@ func NewDecision(dtype DecisionType, expression string) (*Decision, error) {
 	e, err := cel.NewEnv(
 		cel.Declarations(
 			decls.NewVar("this", decls.NewMapType(decls.String, decls.Any)),
+			decls.NewFunction("now",
+				decls.NewOverload(
+					"now",
+					[]*expr.Type{},
+					decls.Int,
+				),
+			),
+			decls.NewFunction("sha1",
+				decls.NewOverload(
+					"sha1",
+					[]*expr.Type{decls.String},
+					decls.String,
+				),
+			),
 		),
 	)
 	if err != nil {
@@ -52,6 +67,10 @@ func NewDecision(dtype DecisionType, expression string) (*Decision, error) {
 			&functions.Overload{
 				Operator: "now",
 				Function: defaultFuncMap["now"],
+			},
+			&functions.Overload{
+				Operator: "sha1",
+				Function: defaultFuncMap["sha1"],
 			}),
 	)
 	if err != nil {

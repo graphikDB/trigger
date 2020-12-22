@@ -7,7 +7,6 @@ import (
 	"github.com/google/cel-go/interpreter/functions"
 	"github.com/pkg/errors"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
-	"time"
 )
 
 // Trigger creates values as map[string]interface{} if it's decisider returns no errors against a Mapper
@@ -33,6 +32,13 @@ func NewTrigger(decision *Decision, triggerExpression string) (*Trigger, error) 
 					decls.Int,
 				),
 			),
+			decls.NewFunction("sha1",
+				decls.NewOverload(
+					"sha1_string",
+					[]*expr.Type{decls.String},
+					decls.String,
+				),
+			),
 		),
 	)
 	if err != nil {
@@ -48,6 +54,12 @@ func NewTrigger(decision *Decision, triggerExpression string) (*Trigger, error) 
 			&functions.Overload{
 				Operator: "now",
 				Function: defaultFuncMap["now"],
+			},
+			&functions.Overload{
+				Operator: "sha1_string",
+				Unary: func(value ref.Val) ref.Val {
+					return defaultFuncMap["sha1"](value)
+				},
 			}),
 	)
 	if err != nil {
@@ -66,7 +78,6 @@ func (t *Trigger) Trigger(data map[string]interface{}) (map[string]interface{}, 
 	if err := t.decision.Eval(data); err == nil {
 		out, _, err := t.program.Eval(map[string]interface{}{
 			"this": data,
-			"now":  time.Now().Unix(),
 		})
 		if err != nil {
 			return nil, errors.Wrapf(err, "eval: failed to evaluate trigger (%s)", t.expression)

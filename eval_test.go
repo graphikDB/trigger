@@ -67,7 +67,8 @@ func ExampleNewTrigger() {
 	trigg, err := eval.NewTrigger(decision, `
 	{
 		'admin': true,
-		'updated_at': now()
+		'updated_at': now(),
+		'email_hash': sha1(this.email)
 	}
 `)
 	if err != nil {
@@ -83,6 +84,6 @@ func ExampleNewTrigger() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(data["admin"], data["updated_at"].(int64) > 0)
+	fmt.Println(data["admin"], data["updated_at"].(int64) > 0, data["email_hash"])
 	// Output: true true
 }
