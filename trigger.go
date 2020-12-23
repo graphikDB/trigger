@@ -39,6 +39,13 @@ func NewTrigger(decision *Decision, triggerExpression string) (*Trigger, error) 
 					decls.String,
 				),
 			),
+			decls.NewFunction("includes",
+				decls.NewOverload(
+					"includes_list_string",
+					[]*expr.Type{decls.NewListType(decls.Any), decls.String},
+					decls.Bool,
+				),
+			),
 		),
 	)
 	if err != nil {

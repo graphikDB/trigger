@@ -85,4 +85,19 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 		}
 		return types.String(decoded)
 	},
+	"includes": func(vals ...ref.Val) ref.Val {
+		if len(vals) != 2 {
+			return errFunction("includes", "expected two params")
+		}
+		if vals[0].Type() != types.ListType {
+			return errFunction("includes", "expected first param to be list")
+		}
+		target := vals[1].Value()
+		for _, val := range vals[0].Value().([]interface{}) {
+			if val == target {
+				return types.Bool(true)
+			}
+		}
+		return types.Bool(false)
+	},
 }
