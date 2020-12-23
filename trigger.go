@@ -1,4 +1,4 @@
-package eval
+package trigger
 
 import (
 	"github.com/google/cel-go/cel"
@@ -80,7 +80,7 @@ func (t *Trigger) Trigger(data map[string]interface{}) (map[string]interface{}, 
 			"this": data,
 		})
 		if err != nil {
-			return nil, errors.Wrapf(err, "eval: failed to evaluate trigger (%s)", t.expression)
+			return nil, errors.Wrapf(err, "trigger: failed to evaluate trigger (%s)", t.expression)
 		}
 		if patchFields, ok := out.Value().(map[ref.Val]ref.Val); ok {
 			newData := map[string]interface{}{}

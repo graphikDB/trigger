@@ -1,13 +1,13 @@
-package eval_test
+package trigger_test
 
 import (
 	"fmt"
-	"github.com/graphikDB/eval"
+	"github.com/graphikDB/trigger"
 	"testing"
 )
 
 func Test(t *testing.T) {
-	decision, err := eval.NewDecision("this.name == 'bob'")
+	decision, err := trigger.NewDecision("this.name == 'bob'")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -23,7 +23,7 @@ func Test(t *testing.T) {
 	}); err == nil {
 		t.Fatal("expected an error since bob3 != bob")
 	}
-	trigg, err := eval.NewTrigger(decision, "{'name': 'coleman'}")
+	trigg, err := trigger.NewTrigger(decision, "{'name': 'coleman'}")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -42,7 +42,7 @@ func Test(t *testing.T) {
 }
 
 func ExampleNewDecision() {
-	decision, err := eval.NewDecision("this.email.endsWith('acme.com')")
+	decision, err := trigger.NewDecision("this.email.endsWith('acme.com')")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -59,12 +59,12 @@ func ExampleNewDecision() {
 }
 
 func ExampleNewTrigger() {
-	decision, err := eval.NewDecision("this.email.endsWith('acme.com')")
+	decision, err := trigger.NewDecision("this.email.endsWith('acme.com')")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	trigg, err := eval.NewTrigger(decision, `
+	trigg, err := trigger.NewTrigger(decision, `
 	{
 		'admin': true,
 		'updated_at': now(),

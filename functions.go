@@ -1,4 +1,4 @@
-package eval
+package trigger
 
 import (
 	"crypto/sha1"

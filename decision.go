@@ -1,4 +1,4 @@
-package eval
+package trigger
 
 import (
 	"github.com/google/cel-go/cel"
@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ErrDecisionDenied   = errors.New("eval: evaluation = false")
-	ErrEmptyExpressions = errors.New("eval: empty expressions")
+	ErrDecisionDenied   = errors.New("trigger: evaluation = false")
+	ErrEmptyExpressions = errors.New("trigger: empty expressions")
 )
 
 // Decision is used to evaluate boolean expressions
@@ -125,7 +125,7 @@ func (n *Decision) Eval(data map[string]interface{}) error {
 		"this": data,
 	})
 	if err != nil {
-		return errors.Wrapf(err, "eval: failed to evaluate decision (%s)", n.expression)
+		return errors.Wrapf(err, "trigger: failed to evaluate decision (%s)", n.expression)
 	}
 	if val, ok := out.Value().(bool); !ok || !val {
 		return ErrDecisionDenied
