@@ -37,6 +37,8 @@ a decision & trigger framework backed by Google's Common Expression Language use
 
 ## Standard Definitions/Library
 
+Additional details on the CEL spec may be found [here](https://github.com/google/cel-spec/blob/master/doc/langdef.md#overview)
+ 
 <table style="width=100%" border="1">
   <col width="15%">
   <col width="40%">
