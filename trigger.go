@@ -2,16 +2,12 @@ package trigger
 
 import (
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types/ref"
-	"github.com/google/cel-go/interpreter/functions"
 	"github.com/pkg/errors"
-	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
 // Trigger creates values as map[string]interface{} if it's decisider returns no errors against a Mapper
 type Trigger struct {
-	e          *cel.Env
 	decision   *Decision
 	program    cel.Program
 	expression string
@@ -22,58 +18,11 @@ func NewTrigger(decision *Decision, triggerExpression string) (*Trigger, error) 
 	if triggerExpression == "" {
 		return nil, ErrEmptyExpressions
 	}
-	e, err := cel.NewEnv(
-		cel.Declarations(
-			decls.NewVar("this", decls.NewMapType(decls.String, decls.Any)),
-			decls.NewFunction("now",
-				decls.NewOverload(
-					"now",
-					[]*expr.Type{},
-					decls.Int,
-				),
-			),
-			decls.NewFunction("sha1",
-				decls.NewOverload(
-					"sha1_string",
-					[]*expr.Type{decls.String},
-					decls.String,
-				),
-			),
-			decls.NewFunction("includes",
-				decls.NewOverload(
-					"includes_list_string",
-					[]*expr.Type{decls.NewListType(decls.Any), decls.String},
-					decls.Bool,
-				),
-			),
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-	ast, iss := e.Compile(triggerExpression)
-	if iss.Err() != nil {
-		return nil, iss.Err()
-	}
-	program, err := e.Program(
-		ast,
-		cel.Functions(
-			&functions.Overload{
-				Operator: "now",
-				Function: defaultFuncMap["now"],
-			},
-			&functions.Overload{
-				Operator: "sha1_string",
-				Unary: func(value ref.Val) ref.Val {
-					return defaultFuncMap["sha1"](value)
-				},
-			}),
-	)
+	program, err := globalEnv.Program(triggerExpression)
 	if err != nil {
 		return nil, err
 	}
 	return &Trigger{
-		e:          e,
 		decision:   decision,
 		program:    program,
 		expression: triggerExpression,

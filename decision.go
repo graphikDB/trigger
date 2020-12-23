@@ -2,10 +2,7 @@ package trigger
 
 import (
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/checker/decls"
-	"github.com/google/cel-go/interpreter/functions"
 	"github.com/pkg/errors"
-	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
 var (
@@ -15,7 +12,6 @@ var (
 
 // Decision is used to evaluate boolean expressions
 type Decision struct {
-	e          *cel.Env
 	program    cel.Program
 	expression string
 }
@@ -25,102 +21,11 @@ func NewDecision(expression string) (*Decision, error) {
 	if expression == "" {
 		return nil, ErrEmptyExpressions
 	}
-	e, err := cel.NewEnv(
-		cel.Declarations(
-			decls.NewVar("this", decls.NewMapType(decls.String, decls.Any)),
-			decls.NewFunction("now",
-				decls.NewOverload(
-					"now",
-					[]*expr.Type{},
-					decls.Int,
-				),
-			),
-			decls.NewFunction("uuid",
-				decls.NewOverload(
-					"uuid",
-					[]*expr.Type{},
-					decls.String,
-				),
-			),
-			decls.NewFunction("sha1",
-				decls.NewOverload(
-					"sha1",
-					[]*expr.Type{decls.String},
-					decls.String,
-				),
-			),
-			decls.NewFunction("sha256",
-				decls.NewOverload(
-					"sha256",
-					[]*expr.Type{decls.String},
-					decls.String,
-				),
-			),
-			decls.NewFunction("base64Decode",
-				decls.NewOverload(
-					"base64Decode",
-					[]*expr.Type{decls.String},
-					decls.String,
-				),
-			),
-			decls.NewFunction("base64Encode",
-				decls.NewOverload(
-					"base64Encode",
-					[]*expr.Type{decls.String},
-					decls.String,
-				),
-			),
-			decls.NewFunction("includes",
-				decls.NewOverload(
-					"includes_list_string",
-					[]*expr.Type{decls.NewListType(decls.Any), decls.String},
-					decls.Bool,
-				),
-			),
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-	if expression == "" {
-		return nil, errors.New("empty expression")
-	}
-	ast, iss := e.Compile(expression)
-	if iss.Err() != nil {
-		return nil, iss.Err()
-	}
-	program, err := e.Program(ast,
-		cel.Functions(
-			&functions.Overload{
-				Operator: "now",
-				Function: defaultFuncMap["now"],
-			},
-			&functions.Overload{
-				Operator: "sha256",
-				Function: defaultFuncMap["sha256"],
-			},
-			&functions.Overload{
-				Operator: "base64Encode",
-				Function: defaultFuncMap["base64Encode"],
-			},
-			&functions.Overload{
-				Operator: "base64Decode",
-				Function: defaultFuncMap["base64Decode"],
-			},
-			&functions.Overload{
-				Operator: "uuid",
-				Function: defaultFuncMap["uuid"],
-			},
-			&functions.Overload{
-				Operator: "sha1",
-				Function: defaultFuncMap["sha1"],
-			}),
-	)
+	program, err := globalEnv.Program(expression)
 	if err != nil {
 		return nil, err
 	}
 	return &Decision{
-		e:          e,
 		program:    program,
 		expression: expression,
 	}, nil
