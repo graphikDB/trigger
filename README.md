@@ -8,10 +8,10 @@ a decision & trigger framework backed by Google's Common Expression Language use
 - [x] RegularExp Expression Macros/Functions(`matches`)
 - [x] Geographic Expression Macros/Functions(`geoDistance`)
 - [x] Cryptographic Expression Macros/Functions(`encrypt, decrypt, sha1, sha256, sha3`)
-- [x] JWT Expression Macros/Functions(`parseClaims`)
+- [x] JWT Expression Macros/Functions(`parseClaims, parseHeader, parseSignature`)
 - [x] Collection Expression Macros/Functions(`parseClaims`)
 - [x] String Manipulation Expression Macros/Functions(`replace, join, titleCase, lowerCase, upperCase, trimSpace, trimPrefix, trimSuffix, split, render`)
-
+- [x] URL Introspection Expression Macros/Functions(`parseHost, parseScheme, parseQuery, parsePath`)
 Use Case:
 
 Since this expression language requires just input data(map[string]interface) and an expression string, Go programs may use it to embed flexible logic that may be changed at runtime without having to recompile.
@@ -104,7 +104,9 @@ Additional details on the standard CEL spec/library may be found [here](https://
 |split       |split(arr list(string), sep string) string                 |slices s into all substrings separated by sep and returns a slice of the substrings between those separators|
 |geoDistance |geoDistance(this list(float64), that list(float64)) float64|haversine distance between two coordinates [lat,lng]                                                        |
 |render      |render(tmplate string, data map[string]interface) string   |renders the input template with the provided data map                                                       |
-|parseClaims |parseClaims(jwt string) map[string]interface) string | returns the payload of the jwt as a map
+|parseClaims |parseClaims(jwt string) map[string]interface) | returns the payload of the jwt as a map
+|parseHeader| parseHeader(jwt string) map[string]interface | returns the header of the jwt as a map
+|parseSignature| parseSignature(jwt string) string | returns the signature of the jwt as a string
 |typeOf |typeOf(any) string | returns the go type of the input
 |encrypt|encrypt(secret string, msg string) string| aes encrypt a message with a given secret
 |decrypt|decrypt(secret string, msg string) string| aes decrypt a message with a given secret

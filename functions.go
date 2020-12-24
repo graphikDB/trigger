@@ -24,6 +24,7 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	"html/template"
 	"io"
+	"net/url"
 	"reflect"
 	"strings"
 	"time"
@@ -392,6 +393,38 @@ var Functions = FuncMap{
 			},
 		},
 	},
+	"parseHeader": {
+		decl: decls.NewFunction("parseHeader",
+			decls.NewOverload(
+				"parseHeader",
+				[]*expr.Type{decls.String},
+				strMap,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "parseHeader",
+			Function: defaultFuncMap["parseHeader"],
+			Unary: func(value ref.Val) ref.Val {
+				return defaultFuncMap["parseHeader"](value)
+			},
+		},
+	},
+	"parseSignature": {
+		decl: decls.NewFunction("parseSignature",
+			decls.NewOverload(
+				"parseSignature",
+				[]*expr.Type{decls.String},
+				decls.String,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "parseSignature",
+			Function: defaultFuncMap["parseSignature"],
+			Unary: func(value ref.Val) ref.Val {
+				return defaultFuncMap["parseSignature"](value)
+			},
+		},
+	},
 	"typeOf": {
 		decl: decls.NewFunction("typeOf",
 			decls.NewOverload(
@@ -437,6 +470,70 @@ var Functions = FuncMap{
 			Function: defaultFuncMap["decrypt"],
 			Binary: func(value ref.Val, value2 ref.Val) ref.Val {
 				return defaultFuncMap["decrypt"](value, value2)
+			},
+		},
+	},
+	"parseHost": {
+		decl: decls.NewFunction("parseHost",
+			decls.NewOverload(
+				"parseHost",
+				[]*expr.Type{decls.String},
+				decls.String,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "parseHost",
+			Function: defaultFuncMap["parseHost"],
+			Unary: func(value ref.Val) ref.Val {
+				return defaultFuncMap["parseHost"](value)
+			},
+		},
+	},
+	"parseQuery": {
+		decl: decls.NewFunction("parseQuery",
+			decls.NewOverload(
+				"parseQuery",
+				[]*expr.Type{decls.String},
+				strMap,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "parseQuery",
+			Function: defaultFuncMap["parseQuery"],
+			Unary: func(value ref.Val) ref.Val {
+				return defaultFuncMap["parseQuery"](value)
+			},
+		},
+	},
+	"parsePath": {
+		decl: decls.NewFunction("parsePath",
+			decls.NewOverload(
+				"parsePath",
+				[]*expr.Type{decls.String},
+				decls.String,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "parsePath",
+			Function: defaultFuncMap["parsePath"],
+			Unary: func(value ref.Val) ref.Val {
+				return defaultFuncMap["parsePath"](value)
+			},
+		},
+	},
+	"parseScheme": {
+		decl: decls.NewFunction("parseScheme",
+			decls.NewOverload(
+				"parseScheme",
+				[]*expr.Type{decls.String},
+				decls.String,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "parseScheme",
+			Function: defaultFuncMap["parseScheme"],
+			Unary: func(value ref.Val) ref.Val {
+				return defaultFuncMap["parseScheme"](value)
 			},
 		},
 	},
@@ -663,6 +760,26 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 		}
 		return types.NewStringInterfaceMap(types.DefaultTypeAdapter, claims)
 	},
+	"parseHeader": func(vals ...ref.Val) ref.Val {
+		if len(vals) != 1 {
+			return errFunction("parseHeader", "expected one params")
+		}
+		header, err := parseHeader(cast.ToString(vals[0].Value()))
+		if err != nil {
+			return errFunction("parseClaims", err.Error())
+		}
+		return types.NewStringInterfaceMap(types.DefaultTypeAdapter, header)
+	},
+	"parseSignature": func(vals ...ref.Val) ref.Val {
+		if len(vals) != 1 {
+			return errFunction("parseSignature", "expected one params")
+		}
+		sig, err := parseSignature(cast.ToString(vals[0].Value()))
+		if err != nil {
+			return errFunction("parseSignature", err.Error())
+		}
+		return types.String(sig)
+	},
 	"typeOf": func(vals ...ref.Val) ref.Val {
 		return types.String(reflect.TypeOf(vals[0].Value()).String())
 	},
@@ -680,14 +797,81 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 		}
 		return types.String(decrypted)
 	},
+	"parseHost": func(vals ...ref.Val) ref.Val {
+		u, err := url.Parse(cast.ToString(vals[0].Value()))
+		if err != nil {
+			return errFunction("parseHost", err.Error())
+		}
+		return types.String(u.Host)
+	},
+	"parsePath": func(vals ...ref.Val) ref.Val {
+		u, err := url.Parse(cast.ToString(vals[0].Value()))
+		if err != nil {
+			return errFunction("parsePath", err.Error())
+		}
+		return types.String(u.Path)
+	},
+	"parseScheme": func(vals ...ref.Val) ref.Val {
+		u, err := url.Parse(cast.ToString(vals[0].Value()))
+		if err != nil {
+			return errFunction("parseScheme", err.Error())
+		}
+		return types.String(u.Scheme)
+	},
+	"parseQuery": func(vals ...ref.Val) ref.Val {
+		u, err := url.Parse(cast.ToString(vals[0].Value()))
+		if err != nil {
+			return errFunction("parseQuery", err.Error())
+		}
+		data := map[string]interface{}{}
+		for k, vals := range u.Query() {
+			if len(vals) > 0 {
+				data[k] = vals[0]
+			}
+		}
+		return types.NewStringInterfaceMap(types.DefaultTypeAdapter, data)
+	},
 }
 
-func parseClaims(token string) (map[string]interface{}, error) {
+func parseJWT(token string) ([]string, error) {
 	token = strings.ReplaceAll(token, "Bearer ", "")
 	token = strings.ReplaceAll(token, "bearer ", "")
 	split := strings.Split(token, ".")
 	if len(split) != 3 {
 		return nil, errors.New("expected 3 jwt segments")
+	}
+	return split, nil
+}
+
+func parseHeader(token string) (map[string]interface{}, error) {
+	split, err := parseJWT(token)
+	if err != nil {
+		return nil, err
+	}
+	payload := []byte(split[0])
+	bits, err := base64.RawStdEncoding.DecodeString(string(payload))
+	if err != nil {
+		return nil, err
+	}
+	data := map[string]interface{}{}
+	if err := json.Unmarshal(bits, &data); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func parseSignature(token string) (string, error) {
+	split, err := parseJWT(token)
+	if err != nil {
+		return "", err
+	}
+	return split[2], nil
+}
+
+func parseClaims(token string) (map[string]interface{}, error) {
+	split, err := parseJWT(token)
+	if err != nil {
+		return nil, err
 	}
 	payload := []byte(split[1])
 	bits, err := base64.RawStdEncoding.DecodeString(string(payload))
