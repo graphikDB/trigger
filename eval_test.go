@@ -66,7 +66,7 @@ func ExampleNewTrigger() {
 	trigg, err := trigger.NewTrigger(decision, `
 	{
 		'updated_at': now(),
-		'password': sha1(this.password)
+		'password': this.password.sha1()
 	}
 `)
 	if err != nil {
@@ -129,7 +129,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world sha1",
 			fields: fields{
-				expression: "sha1(this.text) != 'hello world'",
+				expression: "this.text.sha1() != 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -141,7 +141,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world sha3",
 			fields: fields{
-				expression: "sha3(this.text) != 'hello world'",
+				expression: "this.text.sha3() != 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -153,7 +153,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world sha256",
 			fields: fields{
-				expression: "sha256(this.text) != 'hello world'",
+				expression: "this.text.sha256() != 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -165,7 +165,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world base64Encode",
 			fields: fields{
-				expression: "base64Encode(this.text) == 'aGVsbG8gd29ybGQ='",
+				expression: "this.text.base64Encode() == 'aGVsbG8gd29ybGQ='",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -177,7 +177,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world base64Decode",
 			fields: fields{
-				expression: "base64Decode(this.text) == 'hello world'",
+				expression: "this.text.base64Decode() == 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -189,7 +189,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world jsonDecode",
 			fields: fields{
-				expression: "jsonDecode(this.text).text == 'hello world'",
+				expression: "this.text.jsonDecode().text == 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -201,7 +201,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world includes",
 			fields: fields{
-				expression: "includes(this.text, 'hello world')",
+				expression: "'hello world' in this.text",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -213,7 +213,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "1993 includes",
 			fields: fields{
-				expression: "includes(this.dob, 1993)",
+				expression: "1993 in this.dob",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -225,7 +225,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world replace",
 			fields: fields{
-				expression: "replace(this.text, ' ', '') == 'helloworld'",
+				expression: "this.text.replace(' ', '') == 'helloworld'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -237,7 +237,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world join",
 			fields: fields{
-				expression: "join(this.text, ' ') == 'hello world'",
+				expression: "this.text.join(' ') == 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -249,19 +249,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world titleCase",
 			fields: fields{
-				expression: "titleCase(this.text) == 'Hello World'",
-			},
-			args: args{
-				data: map[string]interface{}{
-					"text": "hello world",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "hello world split",
-			fields: fields{
-				expression: "includes(split(this.text, ' '), 'hello')",
+				expression: "this.text.titleCase() == 'Hello World'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -273,7 +261,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "denver to la",
 			fields: fields{
-				expression: "int(geoDistance(this.denver, this.los_angelas)) > 1336367 && int(geoDistance(this.denver, this.los_angelas)) < 1536367",
+				expression: "int(this.denver.geoDistance(this.los_angelas)) > 1336367 && int(this.denver.geoDistance(this.los_angelas)) < 1536367",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -286,7 +274,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "render hello world",
 			fields: fields{
-				expression: "render(this.text, this.data) == 'hello world'",
+				expression: "this.text.render(this.data) == 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -301,7 +289,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "parseClaims",
 			fields: fields{
-				expression: "parseClaims(this.jwt).name == 'John Doe'",
+				expression: "this.jwt.parseClaims().name == 'John Doe'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -313,7 +301,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "typeOf",
 			fields: fields{
-				expression: "typeOf(this.jwt) == 'string'",
+				expression: "this.jwt.typeOf() == 'string'",
 			},
 			args: args{
 				data: map[string]interface{}{
@@ -325,7 +313,7 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "hello world encrypt",
 			fields: fields{
-				expression: "decrypt(this.secret, encrypt(this.secret, 'hello world')) == 'hello world'",
+				expression: "this.secret.decrypt(this.secret.encrypt('hello world')) == 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{

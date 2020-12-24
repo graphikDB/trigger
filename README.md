@@ -53,7 +53,7 @@ Since this expression language requires just input data(map[string]interface) an
 	trigg, err := trigger.NewTrigger(decision, `
 	{
 		'updated_at': now(),
-		'password': sha1(this.password)
+		'password': this.password.sha1()
 	}
 `)
 	if err != nil {
@@ -92,7 +92,6 @@ Additional details on the standard CEL spec/library may be found [here](https://
 |base64Decode|base64Decode(string) string                                |base64 decoded version of the input                                                                         |
 |jsonEncode  |jsonEncode(string) string                                  |json encoded version of the input                                                                           |
 |jsonDecode  |jsonDecode(string) string                                  |json decoded version of the input                                                                           |
-|includes    |includes(arr list(any), element any) bool                  |returns whether the slice includes the element                                                              |
 |replace     |replace(text string, old string, new string) string        |full string replacement of the old value with the new value                                                 |
 |join        |join(arr list(string), sep string) string                  |joins the array into a single string with the given separator                                               |
 |titleCase   |titleCase(string) string                                   |converts the input into title case string                                                                   |
@@ -101,7 +100,6 @@ Additional details on the standard CEL spec/library may be found [here](https://
 |trimSpace   |trimSpace(string) string                                   |removes white spaces from the input string                                                                  |
 |trimPrefix  |trimPrefix(string) string                                  |removes prefix from the input string                                                                        |
 |trimSuffix  |trimSuffix(string) string                                  |removes suffix from the input string                                                                        |
-|split       |split(arr list(string), sep string) string                 |slices s into all substrings separated by sep and returns a slice of the substrings between those separators|
 |geoDistance |geoDistance(this list(float64), that list(float64)) float64|haversine distance between two coordinates [lat,lng]                                                        |
 |render      |render(tmplate string, data map[string]interface) string   |renders the input template with the provided data map                                                       |
 |parseClaims |parseClaims(jwt string) map[string]interface) | returns the payload of the jwt as a map

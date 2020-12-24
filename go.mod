@@ -9,7 +9,6 @@ require (
 	github.com/paulmach/orb v0.1.7
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cast v1.3.1
-	github.com/thoas/go-funk v0.7.0
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 	google.golang.org/genproto v0.0.0-20201102152239-715cce707fb0
 )

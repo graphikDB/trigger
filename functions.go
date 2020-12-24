@@ -19,7 +19,6 @@ import (
 	"github.com/paulmach/orb/geo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cast"
-	"github.com/thoas/go-funk"
 	"golang.org/x/crypto/sha3"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	"html/template"
@@ -75,14 +74,14 @@ var Functions = FuncMap{
 	},
 	"sha1": {
 		decl: decls.NewFunction("sha1",
-			decls.NewOverload(
-				"sha1_string",
+			decls.NewInstanceOverload(
+				"sha1_overload",
 				[]*expr.Type{decls.String},
 				decls.String,
 			),
 		),
 		overload: &functions.Overload{
-			Operator: "sha1_string",
+			Operator: "sha1_overload",
 			Function: defaultFuncMap["sha1"],
 			Unary: func(value ref.Val) ref.Val {
 				return defaultFuncMap["sha1"](value)
@@ -91,14 +90,14 @@ var Functions = FuncMap{
 	},
 	"sha256": {
 		decl: decls.NewFunction("sha256",
-			decls.NewOverload(
-				"sha256_string",
+			decls.NewInstanceOverload(
+				"sha256_overload",
 				[]*expr.Type{decls.String},
 				decls.String,
 			),
 		),
 		overload: &functions.Overload{
-			Operator: "sha256_string",
+			Operator: "sha256_overload",
 			Function: defaultFuncMap["sha256"],
 			Unary: func(value ref.Val) ref.Val {
 				return defaultFuncMap["sha256"](value)
@@ -107,14 +106,14 @@ var Functions = FuncMap{
 	},
 	"sha3": {
 		decl: decls.NewFunction("sha3",
-			decls.NewOverload(
-				"sha3_string",
+			decls.NewInstanceOverload(
+				"sha3_overload",
 				[]*expr.Type{decls.String},
 				decls.String,
 			),
 		),
 		overload: &functions.Overload{
-			Operator: "sha3_string",
+			Operator: "sha3_overload",
 			Function: defaultFuncMap["sha3"],
 			Unary: func(value ref.Val) ref.Val {
 				return defaultFuncMap["sha3"](value)
@@ -123,7 +122,7 @@ var Functions = FuncMap{
 	},
 	"base64Encode": {
 		decl: decls.NewFunction("base64Encode",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"base64Encode_string",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -139,7 +138,7 @@ var Functions = FuncMap{
 	},
 	"base64Decode": {
 		decl: decls.NewFunction("base64Decode",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"base64Decode_string",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -155,7 +154,7 @@ var Functions = FuncMap{
 	},
 	"jsonEncode": {
 		decl: decls.NewFunction("jsonEncode",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"jsonEncode_string",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -171,7 +170,7 @@ var Functions = FuncMap{
 	},
 	"jsonDecode": {
 		decl: decls.NewFunction("jsonDecode",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"jsonDecode_string",
 				[]*expr.Type{decls.String},
 				strMap,
@@ -185,25 +184,9 @@ var Functions = FuncMap{
 			},
 		},
 	},
-	"includes": {
-		decl: decls.NewFunction("includes",
-			decls.NewOverload(
-				"includes_list",
-				[]*expr.Type{decls.NewListType(decls.Any), decls.Any},
-				decls.Bool,
-			),
-		),
-		overload: &functions.Overload{
-			Operator: "includes_list",
-			Function: defaultFuncMap["includes"],
-			Binary: func(value ref.Val, value2 ref.Val) ref.Val {
-				return defaultFuncMap["includes"](value, value2)
-			},
-		},
-	},
 	"replace": {
 		decl: decls.NewFunction("replace",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"replace",
 				[]*expr.Type{decls.String, decls.String, decls.String},
 				decls.String,
@@ -219,7 +202,7 @@ var Functions = FuncMap{
 	},
 	"join": {
 		decl: decls.NewFunction("join",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"join",
 				[]*expr.Type{decls.NewListType(decls.String), decls.String},
 				decls.String,
@@ -235,7 +218,7 @@ var Functions = FuncMap{
 	},
 	"titleCase": {
 		decl: decls.NewFunction("titleCase",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"titleCase",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -251,7 +234,7 @@ var Functions = FuncMap{
 	},
 	"lowerCase": {
 		decl: decls.NewFunction("lowerCase",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"lowerCase",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -267,7 +250,7 @@ var Functions = FuncMap{
 	},
 	"upperCase": {
 		decl: decls.NewFunction("upperCase",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"upperCase",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -283,7 +266,7 @@ var Functions = FuncMap{
 	},
 	"trimSpace": {
 		decl: decls.NewFunction("trimSpace",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"trimSpace",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -299,7 +282,7 @@ var Functions = FuncMap{
 	},
 	"trimPrefix": {
 		decl: decls.NewFunction("trimPrefix",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"trimPrefix",
 				[]*expr.Type{decls.String, decls.String},
 				decls.String,
@@ -315,7 +298,7 @@ var Functions = FuncMap{
 	},
 	"trimSuffix": {
 		decl: decls.NewFunction("trimSuffix",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"trimSuffix",
 				[]*expr.Type{decls.String, decls.String},
 				decls.String,
@@ -329,25 +312,9 @@ var Functions = FuncMap{
 			},
 		},
 	},
-	"split": {
-		decl: decls.NewFunction("split",
-			decls.NewOverload(
-				"split",
-				[]*expr.Type{decls.String, decls.String},
-				decls.NewListType(decls.String),
-			),
-		),
-		overload: &functions.Overload{
-			Operator: "split",
-			Function: defaultFuncMap["split"],
-			Binary: func(value ref.Val, value2 ref.Val) ref.Val {
-				return defaultFuncMap["split"](value, value2)
-			},
-		},
-	},
 	"geoDistance": {
 		decl: decls.NewFunction("geoDistance",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"geoDistance",
 				[]*expr.Type{decls.NewListType(decls.Double), decls.NewListType(decls.Double)},
 				decls.Double,
@@ -363,7 +330,7 @@ var Functions = FuncMap{
 	},
 	"render": {
 		decl: decls.NewFunction("render",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"render",
 				[]*expr.Type{decls.String, strMap},
 				decls.String,
@@ -379,7 +346,7 @@ var Functions = FuncMap{
 	},
 	"parseClaims": {
 		decl: decls.NewFunction("parseClaims",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"parseClaims",
 				[]*expr.Type{decls.String},
 				strMap,
@@ -395,7 +362,7 @@ var Functions = FuncMap{
 	},
 	"parseHeader": {
 		decl: decls.NewFunction("parseHeader",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"parseHeader",
 				[]*expr.Type{decls.String},
 				strMap,
@@ -411,7 +378,7 @@ var Functions = FuncMap{
 	},
 	"parseSignature": {
 		decl: decls.NewFunction("parseSignature",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"parseSignature",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -427,7 +394,7 @@ var Functions = FuncMap{
 	},
 	"typeOf": {
 		decl: decls.NewFunction("typeOf",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"typeOf",
 				[]*expr.Type{decls.Any},
 				decls.String,
@@ -443,7 +410,7 @@ var Functions = FuncMap{
 	},
 	"encrypt": {
 		decl: decls.NewFunction("encrypt",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"encrypt",
 				[]*expr.Type{decls.String, decls.String},
 				decls.String,
@@ -459,7 +426,7 @@ var Functions = FuncMap{
 	},
 	"decrypt": {
 		decl: decls.NewFunction("decrypt",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"decrypt",
 				[]*expr.Type{decls.String, decls.String},
 				decls.String,
@@ -475,7 +442,7 @@ var Functions = FuncMap{
 	},
 	"parseHost": {
 		decl: decls.NewFunction("parseHost",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"parseHost",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -491,7 +458,7 @@ var Functions = FuncMap{
 	},
 	"parseQuery": {
 		decl: decls.NewFunction("parseQuery",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"parseQuery",
 				[]*expr.Type{decls.String},
 				strMap,
@@ -507,7 +474,7 @@ var Functions = FuncMap{
 	},
 	"parsePath": {
 		decl: decls.NewFunction("parsePath",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"parsePath",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -523,7 +490,7 @@ var Functions = FuncMap{
 	},
 	"parseScheme": {
 		decl: decls.NewFunction("parseScheme",
-			decls.NewOverload(
+			decls.NewInstanceOverload(
 				"parseScheme",
 				[]*expr.Type{decls.String},
 				decls.String,
@@ -624,16 +591,6 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 		json.Unmarshal([]byte(cast.ToString(vals[0].Value())), &data)
 		return types.NewStringInterfaceMap(types.DefaultTypeAdapter, data)
 	},
-	"includes": func(vals ...ref.Val) ref.Val {
-		if len(vals) != 2 {
-			return errFunction("includes", "expected two params")
-		}
-		if vals[0].Type() != types.ListType {
-			return errFunction("includes", "expected first param to be list")
-		}
-
-		return types.Bool(funk.Contains(vals[0].Value(), vals[1].Value()))
-	},
 	"replaceN": func(vals ...ref.Val) ref.Val {
 		if len(vals) != 4 {
 			return errFunction("replace", "expected 4 params")
@@ -704,12 +661,6 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 			return errFunction("trimSuffix", "expected two params")
 		}
 		return types.String(strings.TrimSuffix(cast.ToString(vals[0].Value()), cast.ToString(vals[1].Value())))
-	},
-	"split": func(vals ...ref.Val) ref.Val {
-		if len(vals) != 2 {
-			return errFunction("split", "expected two params")
-		}
-		return types.NewStringList(types.DefaultTypeAdapter, strings.Split(cast.ToString(vals[0].Value()), cast.ToString(vals[1].Value())))
 	},
 	"geoDistance": func(vals ...ref.Val) ref.Val {
 		if len(vals) != 2 {
