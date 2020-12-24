@@ -9,9 +9,10 @@ a decision & trigger framework backed by Google's Common Expression Language use
 - [x] Geographic Expression Macros/Functions(`geoDistance`)
 - [x] Cryptographic Expression Macros/Functions(`encrypt, decrypt, sha1, sha256, sha3`)
 - [x] JWT Expression Macros/Functions(`parseClaims, parseHeader, parseSignature`)
-- [x] Collection Expression Macros/Functions(`parseClaims`)
-- [x] String Manipulation Expression Macros/Functions(`replace, join, titleCase, lowerCase, upperCase, trimSpace, trimPrefix, trimSuffix, split, render`)
+- [x] Collection Expression Macros/Functions(`parseClaims, parseHeader, parseSignature`)
+- [x] String Manipulation Expression Macros/Functions(`replace, join, titleCase, lowerCase, upperCase, trimSpace, trimPrefix, trimSuffix, render`)
 - [x] URL Introspection Expression Macros/Functions(`parseHost, parseScheme, parseQuery, parsePath`)
+
 Use Case:
 
 Since this expression language requires just input data(map[string]interface) and an expression string, Go programs may use it to embed flexible logic that may be changed at runtime without having to recompile.
