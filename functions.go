@@ -2,6 +2,9 @@ package trigger
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
@@ -20,6 +23,7 @@ import (
 	"golang.org/x/crypto/sha3"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	"html/template"
+	"io"
 	"reflect"
 	"strings"
 	"time"
@@ -404,6 +408,38 @@ var Functions = FuncMap{
 			},
 		},
 	},
+	"encrypt": {
+		decl: decls.NewFunction("encrypt",
+			decls.NewOverload(
+				"encrypt",
+				[]*expr.Type{decls.String, decls.String},
+				decls.String,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "encrypt",
+			Function: defaultFuncMap["encrypt"],
+			Binary: func(value ref.Val, value2 ref.Val) ref.Val {
+				return defaultFuncMap["encrypt"](value, value2)
+			},
+		},
+	},
+	"decrypt": {
+		decl: decls.NewFunction("decrypt",
+			decls.NewOverload(
+				"decrypt",
+				[]*expr.Type{decls.String, decls.String},
+				decls.String,
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "decrypt",
+			Function: defaultFuncMap["decrypt"],
+			Binary: func(value ref.Val, value2 ref.Val) ref.Val {
+				return defaultFuncMap["decrypt"](value, value2)
+			},
+		},
+	},
 }
 
 func errFunction(fn string, msg string) ref.Val {
@@ -630,6 +666,20 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 	"typeOf": func(vals ...ref.Val) ref.Val {
 		return types.String(reflect.TypeOf(vals[0].Value()).String())
 	},
+	"encrypt": func(vals ...ref.Val) ref.Val {
+		encrypted, err := encrypt([]byte(cast.ToString(vals[0].Value())), cast.ToString(vals[1].Value()))
+		if err != nil {
+			return errFunction("encrypt", err.Error())
+		}
+		return types.String(encrypted)
+	},
+	"decrypt": func(vals ...ref.Val) ref.Val {
+		decrypted, err := decrypt([]byte(cast.ToString(vals[0].Value())), cast.ToString(vals[1].Value()))
+		if err != nil {
+			return errFunction("decrypt", err.Error())
+		}
+		return types.String(decrypted)
+	},
 }
 
 func parseClaims(token string) (map[string]interface{}, error) {
@@ -649,4 +699,44 @@ func parseClaims(token string) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func encrypt(key []byte, message string) (string, error) {
+	plainText := []byte(message)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	cipherText := make([]byte, aes.BlockSize+len(plainText))
+	iv := cipherText[:aes.BlockSize]
+	if _, err = io.ReadFull(rand.Reader, iv); err != nil {
+		return "", err
+	}
+
+	stream := cipher.NewCFBEncrypter(block, iv)
+	stream.XORKeyStream(cipherText[aes.BlockSize:], plainText)
+	return base64.URLEncoding.EncodeToString(cipherText), nil
+}
+
+func decrypt(key []byte, securemess string) (string, error) {
+	cipherText, err := base64.URLEncoding.DecodeString(securemess)
+	if err != nil {
+		return "", err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	if len(cipherText) < aes.BlockSize {
+		return "", errors.New("cipher text length invalid")
+	}
+	iv := cipherText[:aes.BlockSize]
+	cipherText = cipherText[aes.BlockSize:]
+
+	stream := cipher.NewCFBDecrypter(block, iv)
+	stream.XORKeyStream(cipherText, cipherText)
+	return string(cipherText), nil
 }

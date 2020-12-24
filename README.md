@@ -64,3 +64,5 @@ Additional details on the standard CEL spec/library may be found [here](https://
 |render      |render(tmplate string, data map[string]interface) string   |renders the input template with the provided data map                                                       |
 |parseClaims |parseClaims(jwt string) map[string]interface) string | returns the payload of the jwt as a map
 |typeOf |typeOf(any) string | returns the go type of the input
+|encrypt|encrypt(secret string, msg string) string| aes encrypt a message with a given secret
+|decrypt|decrypt(secret string, msg string) string| aes decrypt a message with a given secret

@@ -323,6 +323,18 @@ func TestDecision_Eval(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "hello world encrypt",
+			fields: fields{
+				expression: "decrypt(this.secret, encrypt(this.secret, 'hello world')) == 'hello world'",
+			},
+			args: args{
+				data: map[string]interface{}{
+					"secret": "this is a secret",
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
