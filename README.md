@@ -4,7 +4,15 @@
 
 a decision & trigger framework backed by Google's Common Expression Language used in [graphikDB](https://graphikdb.github.io/graphik/)
 
-## Use Case
+- [x] Full Text Search Expression Macros/Functions(`startsWith, endsWith, contains`)
+- [x] RegularExp Expression Macros/Functions(`matches`)
+- [x] Geographic Expression Macros/Functions(`geoDistance`)
+- [x] Cryptographic Expression Macros/Functions(`encrypt, decrypt, sha1, sha256, sha3`)
+- [x] JWT Expression Macros/Functions(`parseClaims`)
+- [x] Collection Expression Macros/Functions(`parseClaims`)
+- [x] String Manipulation Expression Macros/Functions(`replace, join, titleCase, lowerCase, upperCase, trimSpace, trimPrefix, trimSuffix, split, render`)
+
+Use Case:
 
 Since this expression language requires just input data(map[string]interface) and an expression string, Go programs may use it to embed flexible logic that may be changed at runtime without having to recompile.
 
