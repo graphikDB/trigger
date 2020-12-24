@@ -21,35 +21,41 @@ a decision & trigger framework backed by Google's Common Expression Language use
     // Output: true 
 ```
 
-#### append updated_at 
+#### create a trigger based on signup event that adds updated_at timestamp & hashes a password
+
 ```go
-	decision, err := trigger.NewDecision("this.email.endsWith('acme.com')")
+	// create a decision that passes if the event equals signup
+	decision, err := trigger.NewDecision("this.event == 'signup' && has(this.email)")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
+	// create a trigger based on the new decision that hashes a password and creates an updated_at timestamp
+	// this would in theory be applied to a newly created user after signup
 	trigg, err := trigger.NewTrigger(decision, `
 	{
-		'admin': true,
 		'updated_at': now(),
-		'email_hash': sha1(this.email)
+		'password': sha1(this.password)
 	}
 `)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	person := map[string]interface{}{
+
+	user := map[string]interface{}{
+		"event": "signup",
 		"name":  "bob",
 		"email": "bob@acme.com",
+		"password": "123456",
 	}
-	data, err := trigg.Trigger(person)
+	data, err := trigg.Trigger(user)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(data["admin"], data["updated_at"].(int64) > 0, data["email_hash"])
-	// Output: true true 6fd706dd2d151c2bf79218a2acd764a7d3eed7e3
+	fmt.Println(data["updated_at"].(int64) > 0, data["password"])
+	// Output: true 7c4a8d09ca3762af61e59520943dc26494f8941b
 
 ```
 

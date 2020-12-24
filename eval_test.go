@@ -55,35 +55,38 @@ func ExampleNewDecision() {
 }
 
 func ExampleNewTrigger() {
-	decision, err := trigger.NewDecision("this.email.endsWith('acme.com')")
+	// create a decision that passes if the event equals signup
+	decision, err := trigger.NewDecision("this.event == 'signup' && has(this.email)")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
+	// create a trigger based on the new decision that hashes a password and creates an updated_at timestamp
+	// this would in theory be applied to a newly created user after signup
 	trigg, err := trigger.NewTrigger(decision, `
 	{
-		'admin': true,
 		'updated_at': now(),
-		'email_sha1': sha1("this.email"),
-		'email_sha3': sha3("this.email"),
-		'email_sha256': sha256("this.email")
+		'password': sha1(this.password)
 	}
 `)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	person := map[string]interface{}{
-		"name":  "bob",
-		"email": "bob@acme.com",
+
+	user := map[string]interface{}{
+		"event":    "signup",
+		"name":     "bob",
+		"email":    "bob@acme.com",
+		"password": "123456",
 	}
-	data, err := trigg.Trigger(person)
+	data, err := trigg.Trigger(user)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(data["admin"], data["updated_at"].(int64) > 0, data["email_sha1"], data["email_sha3"], data["email_sha256"])
-	// Output: true true bbd5d1877fc1db4e1dc12fbd39dd0989cf422be5 1ec04699856dcbef0f32413a71b6c8a1228de6663f46159f0084b0ecbccb7a8ca3e7928028650ad318f2d52e2ed5b9edecfc46c088557e5fa640f94c3fec8c46 2fee51920dc7672e5c66b328a4b4fff0382c4552f893f7a92747a213085855dd
+	fmt.Println(data["updated_at"].(int64) > 0, data["password"])
+	// Output: true 7c4a8d09ca3762af61e59520943dc26494f8941b
 }
 
 func TestDecision_Eval(t *testing.T) {
