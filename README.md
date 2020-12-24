@@ -4,6 +4,16 @@
 
 a decision & trigger framework backed by Google's Common Expression Language used in [graphikDB](https://graphikdb.github.io/graphik/)
 
+## Use Case
+
+Since this expression language requires just input data(map[string]interface) and an expression string, Go programs may use it to embed flexible logic that may be changed at runtime without having to recompile.
+
+- Authorization/Policy Evaluation/Rule Engine
+
+- Database or API "triggers" for mutating data before its commited
+
+
+
 ## Examples
 
 #### restrict access based on domain
