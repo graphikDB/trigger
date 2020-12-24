@@ -11,7 +11,7 @@ a decision & trigger framework backed by Google's Common Expression Language use
 - [x] Geographic Expression Macros/Functions(`geoDistance`)
 - [x] Cryptographic Expression Macros/Functions(`encrypt, decrypt, sha1, sha256, sha3`)
 - [x] JWT Expression Macros/Functions(`parseClaims, parseHeader, parseSignature`)
-- [x] Collection Expression Macros/Functions(`parseClaims, parseHeader, parseSignature`)
+- [x] Collection Expression Macros/Functions(`in, map, filter, exists`)
 - [x] String Manipulation Expression Macros/Functions(`replace, join, titleCase, lowerCase, upperCase, trimSpace, trimPrefix, trimSuffix, render`)
 - [x] URL Introspection Expression Macros/Functions(`parseHost, parseScheme, parseQuery, parsePath`)
 
