@@ -47,15 +47,11 @@ func ExampleNewDecision() {
 		fmt.Println(err.Error())
 		return
 	}
-	if err := decision.Eval(map[string]interface{}{
-		"name":  "bob",
-		"email": "bob@acme.com",
-	}); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	fmt.Println(decision.Expression())
-	// Output: this.email.endsWith('acme.com')
+	err = decision.Eval(map[string]interface{}{
+		"email": "bob@gmail.com",
+	})
+	fmt.Println(err == trigger.ErrDecisionDenied)
+	// Output: true
 }
 
 func ExampleNewTrigger() {

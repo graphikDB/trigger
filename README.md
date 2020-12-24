@@ -4,6 +4,24 @@
 
 a decision & trigger framework backed by Google's Common Expression Language used in [graphikDB](https://graphikdb.github.io/graphik/)
 
+## Examples
+
+#### restrict access based on domain
+
+```go
+	decision, err := trigger.NewDecision("this.email.endsWith('acme.com')")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	err = decision.Eval(map[string]interface{}{
+		"email": "bob@gmail.com",
+	})
+	fmt.Println(err == trigger.ErrDecisionDenied) 
+    // Output: true 
+```
+
+#### append updated_at 
 ```go
 	decision, err := trigger.NewDecision("this.email.endsWith('acme.com')")
 	if err != nil {
