@@ -12,7 +12,7 @@ Since this expression language requires just input data(map[string]interface) an
 
 - Database or API "triggers" for mutating data before its commited
 
-
+- Search Engine(filter something based on a decision)
 
 ## Examples
 
