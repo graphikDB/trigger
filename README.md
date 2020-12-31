@@ -32,7 +32,7 @@ Since this expression language requires just input data(map[string]interface) an
 ```go
 	decision, err := trigger.NewDecision("this.email.endsWith('acme.com')")
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 	err = decision.Eval(map[string]interface{}{
@@ -48,7 +48,7 @@ Since this expression language requires just input data(map[string]interface) an
 	// create a decision that passes if the event equals signup
 	decision, err := trigger.NewDecision("this.event == 'signup' && has(this.email)")
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 	// create a trigger based on the new decision that hashes a password and creates an updated_at timestamp
@@ -60,7 +60,7 @@ Since this expression language requires just input data(map[string]interface) an
 	}
 `)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 
@@ -72,7 +72,7 @@ Since this expression language requires just input data(map[string]interface) an
 	}
 	data, err := trigg.Trigger(user)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 	fmt.Println(data["updated_at"].(int64) > 0, data["password"])
