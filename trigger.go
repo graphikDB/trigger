@@ -4,6 +4,7 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 // Trigger creates values as map[string]interface{} if it's decisider returns no errors against a Mapper
@@ -62,4 +63,27 @@ func (t *Trigger) Trigger(data map[string]interface{}) (map[string]interface{}, 
 // Expression returns the triggers raw CEL expressions
 func (e *Trigger) Expression() string {
 	return e.expression
+}
+
+const ArrowOperator = "=>"
+
+var ErrArrowOperator = errors.Errorf("arrow operator: expecting syntax ${decision} %s ${mutation}", ArrowOperator)
+
+// NewArrowTrigger creates a trigger from arrow syntax  ${decision} => ${mutation}
+func NewArrowTrigger(arrowExpression string) (*Trigger, error) {
+	split := strings.Split(arrowExpression, ArrowOperator)
+	if len(split) != 2 {
+		return nil, ErrArrowOperator
+	}
+	decisionExp := split[0]
+	decision, err := NewDecision(decisionExp)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create trigger from arrow expression")
+	}
+	triggerExp := split[1]
+	t, err := NewTrigger(decision, triggerExp)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create trigger from arrow expression")
+	}
+	return t, nil
 }

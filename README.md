@@ -53,7 +53,8 @@ Since this expression language requires just input data(map[string]interface) an
 	}
 	// create a trigger based on the new decision that hashes a password and creates an updated_at timestamp
 	// this would in theory be applied to a newly created user after signup
-	trigg, err := trigger.NewTrigger(decision, `
+	trigg, err := trigger.NewArrowTrigger(`
+	this.event == 'signup' && has(this.email) =>
 	{
 		'updated_at': now(),
 		'password': this.password.sha1()

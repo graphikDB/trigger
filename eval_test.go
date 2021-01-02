@@ -3,6 +3,7 @@ package trigger_test
 import (
 	"fmt"
 	"github.com/graphikDB/trigger"
+	"reflect"
 	"testing"
 )
 
@@ -55,15 +56,10 @@ func ExampleNewDecision() {
 }
 
 func ExampleNewTrigger() {
-	// create a decision that passes if the event equals signup
-	decision, err := trigger.NewDecision("this.event == 'signup' && has(this.email)")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
 	// create a trigger based on the new decision that hashes a password and creates an updated_at timestamp
 	// this would in theory be applied to a newly created user after signup
-	trigg, err := trigger.NewTrigger(decision, `
+	trigg, err := trigger.NewArrowTrigger(`
+	this.event == 'signup' && has(this.email) =>
 	{
 		'updated_at': now(),
 		'password': this.password.sha1()
@@ -342,52 +338,62 @@ func TestDecision_Eval(t *testing.T) {
 	}
 }
 
-//
-//func TestTrigger_Trigger(t1 *testing.T) {
-//	type fields struct {
-//		decision   *trigger.Decision
-//		expression string
-//	}
-//	type args struct {
-//		data map[string]interface{}
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		want    map[string]interface{}
-//		wantErr bool
-//	}{
-//		{
-//			name:    "",
-//			fields:  fields{
-//				decision:   nil,
-//				expression: "",
-//			},
-//			args:    args{
-//				data: map[string]interface{}{},
-//			},
-//			want:    nil,
-//			wantErr: false,
-//		},
-//	}
-//	for _, tt := range tests {
-//		t1.Run(tt.name, func(t1 *testing.T) {
-//			t, err := trigger.NewTrigger(tt.fields.decision, tt.fields.expression)
-//			if (err != nil) != tt.wantErr {
-//				t1.Errorf("Trigger() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if t != nil {
-//				got, err := t.Trigger(tt.args.data)
-//				if (err != nil) != tt.wantErr {
-//					t1.Errorf("Trigger() error = %v, wantErr %v", err, tt.wantErr)
-//					return
-//				}
-//				if !reflect.DeepEqual(got, tt.want) {
-//					t1.Errorf("Trigger() got = %v, want %v", got, tt.want)
-//				}
-//			}
-//		})
-//	}
-//}
+func TestTrigger_Trigger(t1 *testing.T) {
+	type fields struct {
+		expression string
+	}
+	type args struct {
+		data map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    map[string]interface{}
+		wantErr bool
+	}{
+		{
+			name: "",
+			fields: fields{
+				// if the host equals example.com, return a kubernetes dns address of a service in the examplecom namespace
+				expression: `
+				
+				this.host == "example.com" => 
+				{ 
+					"target": "service.examplecom.cluster.local" 
+				}
+				
+
+`,
+			},
+			args: args{
+				data: map[string]interface{}{
+					"host": "example.com",
+				},
+			},
+			want: map[string]interface{}{
+				"target": "service.examplecom.cluster.local",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			t, err := trigger.NewArrowTrigger(tt.fields.expression)
+			if (err != nil) != tt.wantErr {
+				t1.Errorf("Trigger() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if t != nil {
+				got, err := t.Trigger(tt.args.data)
+				if (err != nil) != tt.wantErr {
+					t1.Errorf("Trigger() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t1.Errorf("Trigger() got = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
