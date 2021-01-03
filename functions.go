@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/Masterminds/sprig"
 	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
@@ -738,7 +739,7 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 
 		buf := bytes.NewBuffer(nil)
 		data := cast.ToStringMap(vals[0].Value())
-		if err := template.Must(template.New("").Parse(cast.ToString(vals[1].Value()))).Execute(buf, data); err != nil {
+		if err := template.Must(template.New("").Funcs(sprig.HtmlFuncMap()).Parse(cast.ToString(vals[1].Value()))).Execute(buf, data); err != nil {
 			return errFunction("render", err.Error())
 		}
 		return types.String(buf.String())
