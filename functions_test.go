@@ -270,14 +270,11 @@ func TestDecision_Eval(t *testing.T) {
 		{
 			name: "render hello world",
 			fields: fields{
-				expression: "this.text.render(this.data) == 'hello world'",
+				expression: "this.render('{{ .text }}') == 'hello world'",
 			},
 			args: args{
 				data: map[string]interface{}{
-					"text": "{{ .text }}",
-					"data": map[string]interface{}{
-						"text": "hello world",
-					},
+					"text": "hello world",
 				},
 			},
 			wantErr: false,
@@ -314,6 +311,18 @@ func TestDecision_Eval(t *testing.T) {
 			args: args{
 				data: map[string]interface{}{
 					"secret": "this is a secret",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "hello world split",
+			fields: fields{
+				expression: "this.text.split(' ')[0] == 'hello'",
+			},
+			args: args{
+				data: map[string]interface{}{
+					"text": "hello world",
 				},
 			},
 			wantErr: false,

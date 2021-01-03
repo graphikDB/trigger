@@ -332,7 +332,7 @@ var Functions = FuncMap{
 		decl: decls.NewFunction("render",
 			decls.NewInstanceOverload(
 				"render",
-				[]*expr.Type{decls.String, strMap},
+				[]*expr.Type{strMap, decls.String},
 				decls.String,
 			),
 		),
@@ -501,6 +501,54 @@ var Functions = FuncMap{
 			Function: defaultFuncMap["parseScheme"],
 			Unary: func(value ref.Val) ref.Val {
 				return defaultFuncMap["parseScheme"](value)
+			},
+		},
+	},
+	"split": {
+		decl: decls.NewFunction("split",
+			decls.NewInstanceOverload(
+				"split",
+				[]*expr.Type{decls.String, decls.String},
+				decls.NewListType(decls.String),
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "split",
+			Function: defaultFuncMap["split"],
+			Binary: func(value ref.Val, val2 ref.Val) ref.Val {
+				return defaultFuncMap["split"](value, val2)
+			},
+		},
+	},
+	"trimRight": {
+		decl: decls.NewFunction("trimRight",
+			decls.NewInstanceOverload(
+				"trimRight",
+				[]*expr.Type{decls.String, decls.String},
+				decls.NewListType(decls.String),
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "trimRight",
+			Function: defaultFuncMap["trimRight"],
+			Binary: func(value ref.Val, val2 ref.Val) ref.Val {
+				return defaultFuncMap["trimRight"](value, val2)
+			},
+		},
+	},
+	"trimLeft": {
+		decl: decls.NewFunction("trimLeft",
+			decls.NewInstanceOverload(
+				"trimLeft",
+				[]*expr.Type{decls.String, decls.String},
+				decls.NewListType(decls.String),
+			),
+		),
+		overload: &functions.Overload{
+			Operator: "trimLeft",
+			Function: defaultFuncMap["trimLeft"],
+			Binary: func(value ref.Val, val2 ref.Val) ref.Val {
+				return defaultFuncMap["trimLeft"](value, val2)
 			},
 		},
 	},
@@ -687,16 +735,10 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 		if len(vals) != 2 {
 			return errFunction("render", "expected two params")
 		}
-		if vals[0].Type() != types.StringType {
-			return errFunction("render", "expected first param to be string")
-		}
-		if vals[1].Type() != types.MapType {
-			return errFunction("render", "expected second param to be map")
-		}
 
 		buf := bytes.NewBuffer(nil)
-		data := cast.ToStringMap(vals[1].Value())
-		if err := template.Must(template.New("").Parse(cast.ToString(vals[0].Value()))).Execute(buf, data); err != nil {
+		data := cast.ToStringMap(vals[0].Value())
+		if err := template.Must(template.New("").Parse(cast.ToString(vals[1].Value()))).Execute(buf, data); err != nil {
 			return errFunction("render", err.Error())
 		}
 		return types.String(buf.String())
@@ -781,6 +823,16 @@ var defaultFuncMap = map[string]func(...ref.Val) ref.Val{
 			}
 		}
 		return types.NewStringInterfaceMap(types.DefaultTypeAdapter, data)
+	},
+	"split": func(vals ...ref.Val) ref.Val {
+		split := strings.Split(cast.ToString(vals[0].Value()), cast.ToString(vals[1].Value()))
+		return types.NewStringList(types.DefaultTypeAdapter, split)
+	},
+	"trimRight": func(vals ...ref.Val) ref.Val {
+		return types.String(strings.TrimRight(cast.ToString(vals[0].Value()), cast.ToString(vals[1].Value())))
+	},
+	"trimLeft": func(vals ...ref.Val) ref.Val {
+		return types.String(strings.TrimLeft(cast.ToString(vals[0].Value()), cast.ToString(vals[1].Value())))
 	},
 }
 
