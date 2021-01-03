@@ -45,12 +45,6 @@ Since this expression language requires just input data(map[string]interface) an
 #### create a trigger based on signup event that adds updated_at timestamp & hashes a password
 
 ```go
-	// create a decision that passes if the event equals signup
-	decision, err := trigger.NewDecision("this.event == 'signup' && has(this.email)")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
 	// create a trigger based on the new decision that hashes a password and creates an updated_at timestamp
 	// this would in theory be applied to a newly created user after signup
 	trigg, err := trigger.NewArrowTrigger(`
