@@ -56,6 +56,9 @@ func (t *Trigger) Trigger(data map[string]interface{}) (map[string]interface{}, 
 			}
 			return newData, nil
 		}
+		return map[string]interface{}{
+			"value": out.Value(),
+		}, nil
 	}
 	return map[string]interface{}{}, nil
 }
