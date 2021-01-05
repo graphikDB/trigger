@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/Masterminds/sprig"
 	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types"
@@ -309,7 +310,7 @@ var Functions = FuncMap{
 			Operator: "trimSuffix",
 			Function: defaultFuncMap["trimSuffix"],
 			Binary: func(value ref.Val, value2 ref.Val) ref.Val {
-				return defaultFuncMap["trimSuffix"](value)
+				return defaultFuncMap["trimSuffix"](value, value2)
 			},
 		},
 	},
@@ -927,4 +928,34 @@ func decrypt(key []byte, securemess string) (string, error) {
 	stream := cipher.NewCFBDecrypter(block, iv)
 	stream.XORKeyStream(cipherText, cipherText)
 	return string(cipherText), nil
+}
+
+func toSlice(val interface{}) []interface{} {
+	var args []interface{}
+	switch val.(type) {
+	case []ref.Val:
+		for _, arg := range val.([]ref.Val) {
+			args = append(args, arg.Value())
+		}
+	case []string:
+		for _, arg := range val.([]string) {
+			args = append(args, arg)
+		}
+	case []int:
+		for _, arg := range val.([]int) {
+			args = append(args, arg)
+		}
+	case []float64:
+		for _, arg := range val.([]float64) {
+			args = append(args, arg)
+		}
+	case map[string]interface{}, []interface{}:
+		args = cast.ToSlice(val)
+	default:
+		args = append(args, val)
+	}
+	for _, arg := range args {
+		fmt.Printf("%T\n", arg)
+	}
+	return args
 }
