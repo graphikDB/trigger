@@ -32,7 +32,7 @@ func init() {
 
 type environment struct {
 	env   *cel.Env
-	cache *generic.Cache
+	cache generic.Cache
 }
 
 func (e *environment) Program(expression string) (cel.Program, error) {

@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/google/cel-go v0.6.1-0.20201210004405-3ea8bd382b11
 	github.com/google/uuid v1.1.2
-	github.com/graphikDB/generic v0.0.1
+	github.com/graphikDB/generic v0.1.0
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
